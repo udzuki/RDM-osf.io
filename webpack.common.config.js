@@ -25,6 +25,7 @@ var entry = {
     // JS
     'base-page': staticPath('js/pages/base-page.js'),
     'home-page': staticPath('js/pages/home-page.js'),
+    'home-page-simple': staticPath('js/pages/home-page-simple.js'),
     'landing-page': staticPath('js/pages/landing-page.js'),
     'dashboard-page': staticPath('js/pages/dashboard-page.js'),
     'profile-page': staticPath('js/pages/profile-page.js'),
@@ -40,6 +41,7 @@ var entry = {
     'statistics-page': staticPath('js/pages/statistics-page.js'),
     'file-page': staticPath('js/pages/file-page.js'),
     'files-page': staticPath('js/pages/files-page.js'),
+    'timestamp-page': staticPath('js/pages/timestamp-page.js'),
     'prereg-landing-page': staticPath('js/pages/prereg-landing-page.js'),
     'profile-settings-page': staticPath('js/pages/profile-settings-page.js'),
     'profile-account-settings-page': staticPath('js/pages/profile-account-settings-page.js'),
@@ -60,6 +62,7 @@ var entry = {
     'notifications-config-page': staticPath('js/pages/notifications-config-page.js'),
     'render-nodes': staticPath('js/pages/render-nodes.js'),
     'institution-page': staticPath('js/pages/institution-page.js'),
+    'rdm-firebase': staticPath('js/rdm-firebase.js'),
     // Commons chunk
     'vendor': [
         // Vendor libraries

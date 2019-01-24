@@ -110,6 +110,13 @@ class Email(BaseModel):
         return self.address
 
 
+class CGGroup(BaseModel):
+    name = models.CharField(max_length=255, unique=True)
+
+    def __unicode__(self):
+        return self.name
+
+
 class OSFUser(DirtyFieldsMixin, GuidMixin, BaseModel, AbstractBaseUser, PermissionsMixin, AddonModelMixin):
     FIELD_ALIASES = {
         '_id': 'guids___id',
@@ -355,6 +362,17 @@ class OSFUser(DirtyFieldsMixin, GuidMixin, BaseModel, AbstractBaseUser, Permissi
 
     is_active = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
+
+    # ePPN, eduPersonTargetedID and isMemberOf from Shibboleth
+    # for Cloud Gateway
+    eppn = models.CharField(blank=True, max_length=255, db_index=True, unique=True, null=True)  # eduPersonPrincipalName
+    eptid = models.CharField(blank=True, max_length=255, db_index=True, unique=True, null=True)  # eduPersonTargetedID
+    have_email = models.BooleanField(default=False)
+    cggroups = models.ManyToManyField(CGGroup, related_name='users_group')
+    cggroups_admin = models.ManyToManyField(CGGroup, related_name='users_group_admin')
+    cggroups_sync = models.ManyToManyField(CGGroup, related_name='users_group_sync')
+    cggroups_initialized = models.BooleanField(default=False)
+    date_last_access = NonNaiveDateTimeField(null=True, blank=True)
 
     def __repr__(self):
         return '<OSFUser({0!r}) with guid {1!r}>'.format(self.username, self._id)
@@ -1163,6 +1181,19 @@ class OSFUser(DirtyFieldsMixin, GuidMixin, BaseModel, AbstractBaseUser, Permissi
             self.save()
             unregistered_user.username = None
 
+        if self.have_email is False:
+            # username is not email address.
+            if self.emails.filter(address=self.username).exists():
+                self.emails.filter(address=self.username).delete()
+            self.username = email
+            self.have_email = True
+            mails.send_mail(
+                to_addr=email,
+                mail=mails.WELCOME_OSF4I,
+                mimetype='html',
+                user=self
+            )
+
         if not self.emails.filter(address=email).exists():
             self.emails.create(address=email)
 
@@ -1207,6 +1238,19 @@ class OSFUser(DirtyFieldsMixin, GuidMixin, BaseModel, AbstractBaseUser, Permissi
 
     def update_date_last_login(self):
         self.date_last_login = timezone.now()
+
+    def update_date_last_access(self):
+        self.date_last_access = timezone.now()
+
+    def add_group(self, groupname):
+        if not self.cggroups.filter(name=groupname).exists():
+            group, created = CGGroup.objects.get_or_create(name=groupname)
+            self.cggroups.add(group)
+
+    def add_group_admin(self, groupname):
+        if not self.cggroups_admin.filter(name=groupname).exists():
+            group, created = CGGroup.objects.get_or_create(name=groupname)
+            self.cggroups_admin.add(group)
 
     def get_summary(self, formatter='long'):
         return {

@@ -83,6 +83,12 @@ class UserFactory(DjangoModelFactory):
         return instance
 
     @factory.post_generation
+    def set_have_email(self, create, extracted):
+        self.have_email = True
+        if create:
+            self.save()
+
+    @factory.post_generation
     def set_names(self, create, extracted):
         parsed = impute_names_model(self.fullname)
         for key, value in parsed.items():
@@ -123,7 +129,6 @@ class UnregUserFactory(DjangoModelFactory):
     email = factory.LazyFunction(fake_email)
     fullname = factory.Sequence(lambda n: 'Freddie Mercury{0}'.format(n))
     date_registered = factory.Faker('date_time', tzinfo=pytz.utc)
-
     # Add user parameter "have_email" for testing RDM repair part.(GRDM656,GRDM2593)
     have_email = True
 

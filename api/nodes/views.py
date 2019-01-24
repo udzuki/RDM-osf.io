@@ -109,7 +109,10 @@ from addons.wiki.models import NodeWikiPage
 from website import mails
 from website.exceptions import NodeStateError
 from website.util.permissions import ADMIN, PERMISSIONS
+from osf.models import RdmTimestampGrantPattern
 
+import logging
+logger = logging.getLogger(__name__)
 
 class NodeMixin(object):
     """Mixin with convenience methods for retrieving the current node based on the
@@ -126,6 +129,12 @@ class NodeMixin(object):
             # If this is an embedded request, the node might be cached somewhere
             node = self.request.parents[Node].get(self.kwargs[self.node_lookup_url_kwarg])
 
+        try:
+            timestamp_pattern = RdmTimestampGrantPattern.objects.get(node_guid=self.kwargs['node_id'])
+            timestamp_pattern.timestamp_pattern_division = int(self.request.data['timestampPattern'])
+            timestamp_pattern.save()
+        except Exception:
+            pass
         if node is None:
             node = get_object_or_error(
                 Node,
@@ -267,7 +276,6 @@ class NodeList(JSONAPIBaseView, bulk_views.BulkUpdateJSONAPIView, bulk_views.Bul
         drf_permissions.IsAuthenticatedOrReadOnly,
         base_permissions.TokenHasScope,
     )
-
     required_read_scopes = [CoreScopes.NODE_BASE_READ]
     required_write_scopes = [CoreScopes.NODE_BASE_WRITE]
     model_class = apps.get_model('osf.AbstractNode')
@@ -298,6 +306,7 @@ class NodeList(JSONAPIBaseView, bulk_views.BulkUpdateJSONAPIView, bulk_views.Bul
             for node in nodes:
                 if not node.can_edit(auth):
                     raise PermissionDenied
+
             return nodes
         else:
             return self.get_queryset_from_request()
@@ -666,7 +675,7 @@ class NodeContributorsList(BaseContributorList, bulk_views.BulkUpdateJSONAPIView
         else:
             return NodeContributorsSerializer
 
-    # overrides ListBulkCreateJSONAPIView, BulkUpdateJSONAPIView
+    # overrides ListBulkCreateJSON APIView, BulkUpdateJSONAPIView
     def get_queryset(self):
         queryset = self.get_queryset_from_request()
         # If bulk request, queryset only contains contributors in request
@@ -2397,11 +2406,11 @@ class NodeProvidersList(JSONAPIBaseView, generics.ListAPIView, NodeMixin):
 
     def get_queryset(self):
         return [
-            self.get_provider_item(addon.config.short_name)
-            for addon
-            in self.get_node().get_addons()
-            if addon.config.has_hgrid_files
-            and addon.configured
+            self.get_provider_item(addon.config.short_name) for
+            addon in
+            self.get_node().get_addons() if
+            addon.config.has_hgrid_files and
+            addon.configured
         ]
 
 class NodeProviderDetail(JSONAPIBaseView, generics.RetrieveAPIView, NodeMixin):
@@ -2841,6 +2850,13 @@ class NodeInstitutionsRelationship(JSONAPIBaseView, generics.RetrieveUpdateDestr
     def create(self, *args, **kwargs):
         try:
             ret = super(NodeInstitutionsRelationship, self).create(*args, **kwargs)
+            # timestamp_pattern create
+            for data in self.request.data['data']:
+                institution_id = Institution.objects.get(_id=data['id']).id
+                guid = kwargs['node_id']
+                timestampPattern, _ = RdmTimestampGrantPattern.objects.get_or_create(
+                    institution_id=institution_id, node_guid=guid)
+                timestampPattern.save()
         except RelationshipPostMakesNoChanges:
             return Response(status=HTTP_204_NO_CONTENT)
         return ret

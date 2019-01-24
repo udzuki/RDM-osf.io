@@ -98,6 +98,24 @@
                                              valueUpdate: 'afterkeydown'",
                             class="form-control resize-vertical" style="max-width: 100%"></textarea>
                         </div>
+                    % if 'admin' in user['permissions']:
+                        <div class="form-group">
+                            <label for="description">Select Timestamp Function:</label>
+                            <select id="timestamp_pattern" data-bind="value: selectedTimestampPattern">
+                            % if timestamp_pattern_division == 1:
+                                 <option value="1" selected>Timestamp only</option>
+<%doc> Only "Timestamp only" (while digital signature develop)
+                                 <option value="2">Timestamp with digital signature</option>
+</%doc>
+                            % else:
+                                 <option value="1">Timestamp only</option>
+<%doc>
+                                 <option value="2" selected>Timestamp with digital signature</option>
+</%doc>
+                            % endif
+                            </select>
+                        </div>
+                    % endif
                            <button data-bind="click: cancelAll"
                             class="btn btn-default">Cancel</button>
                             <button data-bind="click: updateAll"
@@ -107,7 +125,19 @@
                         </div>
                     % if 'admin' in user['permissions']:
                         <hr />
+                        % if can_delete:
+                            <div class="help-block">
+                                A project cannot be deleted if it has any components within it.
+                                To delete a parent project, you must first delete all child components
+                                by visiting their settings pages.
+                            </div>
                             <button id="deleteNode" class="btn btn-danger btn-delete-node" data-toggle="modal" data-target="#nodesDelete">Delete ${node['node_type']}</button>
+                        % else:
+                            <div class="help-block">
+                                A project which is related to a external group (${group}) cannot be deleted.
+                            </div>
+                            <button disabled="disabled" class="btn btn-danger btn-delete-node" data-toggle="modal" data-target="#nodesDelete">Delete ${node['node_type']}</button>
+                       % endif
                     % endif
                     </div>
                 </div>
@@ -475,6 +505,7 @@
       window.contextVars.currentUser = window.contextVars.currentUser || {};
       window.contextVars.currentUser.institutions = ${ user['institutions'] | sjson, n };
       window.contextVars.currentUser.permissions = ${ user['permissions'] | sjson, n } ;
+      window.contextVars.timestampPattern = ${ node['timestamp_pattern_division'] | sjson, n };
       window.contextVars.analyticsMeta = $.extend(true, {}, window.contextVars.analyticsMeta, {
           pageMeta: {
               title: 'Settings',

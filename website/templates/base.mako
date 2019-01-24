@@ -4,7 +4,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>OSF | ${self.title()}</title>
+    <title>${osf_page_name} | ${self.title()}</title>
     % if settings.GOOGLE_SITE_VERIFICATION:
         <meta name="google-site-verification" content="${settings.GOOGLE_SITE_VERIFICATION}" />
     % endif
@@ -96,7 +96,7 @@
 
     <link href='//fonts.googleapis.com/css?family=Carrois+Gothic|Inika|Patua+One' rel='stylesheet' type='text/css'>
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,600,300' rel='stylesheet' type='text/css'>
-
+    <link rel="manifest" href="/static/public/js/manifest.json">
 </head>
 <body data-spy="scroll" data-target=".scrollspy">
 
@@ -164,7 +164,9 @@
 % endif
 
 
+    % if pages_footer:
     ${self.footer()}
+    % endif
     <%include file="copyright.mako"/>
         <%!
             import hashlib
@@ -247,6 +249,8 @@
 
 
         ${self.javascript_bottom()}
+        <!-- <script src="https://www.gstatic.com/firebasejs/4.8.0/firebase.js"></script>
+        <script src="/static/public/js/rdm-firebase.js"></script> -->
     </body>
 </html>
 
@@ -383,6 +387,9 @@
         <script>window.jQuery || document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js">\x3C/script>')</script>
         <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
         <script>window.jQuery.ui || document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js">\x3C/script>')</script>
+        <link rel="stylesheet" href="http://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+        <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     % else:
         <link rel="stylesheet" href="/static/vendor/bower_components/bootstrap/dist/css/bootstrap.min.css">
         <script src="/static/vendor/bower_components/jquery/dist/jquery.min.js"></script>
