@@ -351,6 +351,7 @@ services:
 
   requirements:
     image: quay.io/centerforopenscience/osf:develop
+    tty: true
     command:
       - /bin/bash
       - -c
