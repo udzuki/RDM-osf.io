@@ -129,8 +129,7 @@ class UnregUserFactory(DjangoModelFactory):
     email = factory.LazyFunction(fake_email)
     fullname = factory.Sequence(lambda n: 'Freddie Mercury{0}'.format(n))
     date_registered = factory.Faker('date_time', tzinfo=pytz.utc)
-
-    # Add user parameter "have_email" for testing RDM repair part.(#656,#2593)
+    # Add user parameter "have_email" for testing RDM repair part.(GRDM656,GRDM2593)
     have_email = True
 
     class Meta:

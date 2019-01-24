@@ -13,7 +13,6 @@ The code for [https://rcos.nii.ac.jp](https://rcos.nii.ac.jp).
 
 ## Running the OSF For Development
 
----
 # OSF
 
 The code for [https://osf.io](https://osf.io).
